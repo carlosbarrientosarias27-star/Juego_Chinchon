@@ -26,9 +26,23 @@ class Baraja:
         self.cartas += [Carta(es_comodin=True, id_comodin=i) for i in range(1, 5)]
         random.shuffle(self.cartas)
 
-    def robar(self) -> Carta:
+    def robar(self):
         if not self.cartas:
-            self._reabastecer_mazo()
+            if len(self.descartes) > 1:
+                # Keep the top card of the discard pile
+                ultima_descartada = self.descartes.pop()
+                
+                # Move everything else to the deck and shuffle
+                self.cartas = self.descartes
+                random.shuffle(self.cartas)
+                
+                # Reset the discard pile to only contain the last card
+                self.descartes = [ultima_descartada]
+            else:
+                # If there are no cards in discard to move, return None 
+                # or raise an error depending on your game rules
+                return None
+
         return self.cartas.pop()
 
     def _reabastecer_mazo(self):
