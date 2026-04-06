@@ -22,13 +22,13 @@ def test_puntos_normales():
 
 def test_reabastecer_mazo():
     mazo = Baraja()
-    # Simulamos mazo vacío y 3 cartas en descartes
     mazo.cartas = []
-    # Al poner 3 cartas: 1 se queda en descartes, 2 pasan al mazo, robas 1, queda 1.
+    # 3 cartas en descartes
     mazo.descartes = [Carta('Copas', 1), Carta('Copas', 2), Carta('Copas', 3)]
     
-    # Robar activará el reabastecimiento
+    # Esta llamada ejecuta la lógica de reabastecimiento
     carta = mazo.robar()
     
-    assert len(mazo.cartas) == 2  # Ahora habrá 2 tras el trasvase, menos 1 robada = 1 restante
-    assert len(mazo.descartes) == 1 # La última carta de descartes se mantiene
+    # AJUSTE: Ahora el mazo tiene 1 carta (2 que pasaron menos 1 que se robó)
+    assert len(mazo.cartas) == 1  
+    assert len(mazo.descartes) == 1
