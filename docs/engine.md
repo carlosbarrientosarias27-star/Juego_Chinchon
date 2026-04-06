@@ -17,19 +17,19 @@ class JuegoChinchon:
     def __init__(self, nombres_jugadores: List[str], ui: GameInterface)
 ```
 
-## Atributos de instancia
+### Atributos de instancia
 
-| Atributo        | Tipo            | Descripción                                      |
-|-----------------|-----------------|--------------------------------------------------|
-| `ui`            | `GameInterface` | Interfaz de usuario inyectada                    |
-| `jugadores`     | `List[Jugador]` | Lista completa de jugadores de la partida        |
-| `baraja`        | `Baraja`        | Instancia de la baraja activa                    |
-| `ronda_actual`  | `int`           | Número de ronda en curso (empieza en 1)          |
-| `finalizado`    | `bool`          | Estado de finalización de la partida             |
+| Atributo       | Tipo            | Descripción                               |
+|----------------|-----------------|-------------------------------------------|
+| `ui`           | `GameInterface` | Interfaz de usuario inyectada             |
+| `jugadores`    | `List[Jugador]` | Lista completa de jugadores de la partida |
+| `baraja`       | `Baraja`        | Instancia de la baraja activa             |
+| `ronda_actual` | `int`           | Número de ronda en curso (empieza en 1)   |
+| `finalizado`   | `bool`          | Estado de finalización de la partida      |
 
 ---
 
-# Métodos
+### Métodos
 
 ## `obtener_jugadores_activos() → List[Jugador]`
 Filtra y retorna solo los jugadores que no han sido eliminados.
@@ -40,7 +40,7 @@ activos = juego.obtener_jugadores_activos()
 
 ---
 
-## `preparar_ronda()`
+#### `preparar_ronda()`
 Reinicia la baraja, coloca una carta inicial en la pila de descartes y reparte **7 cartas** a cada jugador activo.
 
 ```python
@@ -49,22 +49,31 @@ juego.preparar_ronda()
 
 ---
 
-## `ejecutar_turno(jugador: Jugador) → bool`
+#### `ejecutar_turno(jugador: Jugador) → Optional[bool]`
 Gestiona el turno completo de un jugador en dos fases:
 
 **Fase 1 — Robo:**
-- El jugador elige robar del **mazo** o del **descarte**.
+- El jugador elige robar del **mazo**, del **descarte**, o **salir** del juego.
 - Si roba un comodín desde el mazo, se aplica su efecto especial y luego roba una carta normal.
 
 **Fase 2 — Descarte/Cierre:**
 - El jugador descarta una carta de su mano.
 - Si sus puntos son ≤ 15, puede optar por **cerrar la ronda**.
 
-Retorna `True` si el jugador decide cerrar, `False` en caso contrario.
+**Valores de retorno:**
+
+| Retorno | Significado                              |
+|---------|------------------------------------------|
+| `True`  | El jugador decide cerrar la ronda        |
+| `False` | El jugador continúa (no cierra)          |
+| `None`  | El jugador eligió **salir** del juego    |
 
 ```python
 cerrar = juego.ejecutar_turno(jugador)
-if cerrar:
+
+if cerrar is None:
+    print("El jugador abandonó la partida.")
+elif cerrar:
     juego.calcular_fin_ronda(jugador)
 ```
 
@@ -86,17 +95,17 @@ juego.calcular_fin_ronda(jugador_que_cerro)
 ## `_aplicar_logica_comodin(jugador: Jugador, carta: Carta)` *(privado)*
 Aplica el efecto de un comodín de cerveza sobre el jugador que lo robó.
 
-| ID | Nombre          | Efecto                                              |
-|----|-----------------|-----------------------------------------------------|
-| 1  | Estrecha Galicia | Reduce puntos a 80 si el jugador tiene ≥ 100        |
-| 2  | Alhambra Verde  | Reduce puntos a 25 si el jugador tiene ≥ 50         |
-| 3  | 1906            | Resta 25 puntos si el jugador tiene ≥ 25            |
-| 4  | SIN CERVEZA     | **Elimina** al jugador inmediatamente               |
+| ID | Nombre           | Efecto                                       |
+|----|------------------|----------------------------------------------|
+| 1  | Estrecha Galicia | Reduce puntos a 80 si el jugador tiene ≥ 100 |
+| 2  | Alhambra Verde   | Reduce puntos a 25 si el jugador tiene ≥ 50  |
+| 3  | 1906             | Resta 25 puntos si el jugador tiene ≥ 25     |
+| 4  | SIN CERVEZA      | **Elimina** al jugador inmediatamente        |
 
 ---
 
 ## `jugar()`
-**Bucle principal de la partida.** Ejecuta rondas completas hasta que solo quede un jugador activo. Al finalizar, anuncia al ganador.
+**Bucle principal de la partida.** Ejecuta rondas completas hasta que solo quede un jugador activo o un jugador decida salir voluntariamente.
 
 ```python
 juego = JuegoChinchon(['Ana', 'Luis', 'María'], ui=mi_interfaz)
@@ -109,18 +118,20 @@ mientras haya > 1 jugador activo:
     preparar_ronda()
     para cada jugador en orden:
         ejecutar_turno()
-        si cierra → calcular_fin_ronda() → nueva ronda
-mostrar_puntuaciones()
-anunciar_ganador()
+        si retorna None  → salida voluntaria, termina la partida
+        si retorna True  → calcular_fin_ronda() → nueva ronda
+    mostrar_puntuaciones()
 ```
+
+> ⚠️ Si un jugador elige `"salir"` durante su turno, la partida termina inmediatamente sin anunciar ganador.
 
 ---
 
 # Dependencias internas
 
-| Módulo              | Uso                                        |
-|---------------------|--------------------------------------------|
-| `models.player`     | Clase `Jugador`                            |
-| `core.cards`        | Clases `Baraja` y `Carta`                  |
-| `core.validator`    | `Validador.calcular_puntos_optimos()`      |
-| `ui.interface`      | `GameInterface` para interacción con el UI |
+| Módulo           | Uso                                        |
+|------------------|--------------------------------------------|
+| `models.player`  | Clase `Jugador`                            |
+| `core.cards`     | Clases `Baraja` y `Carta`                  |
+| `core.validator` | `Validador.calcular_puntos_optimos()`      |
+| `ui.interface`   | `GameInterface` para interacción con el UI |
