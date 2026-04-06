@@ -52,19 +52,19 @@ class TestJuegoChinchon:
     def test_ejecutar_turno_robo_mazo_normal(self, mock_validador, juego, mock_ui):
         """Verifica el flujo de robo del mazo y descarte sin cerrar."""
         jugador = juego.jugadores[0]
-        # Empezamos con la mano estándar de 7 cartas
         jugador.mano = [MagicMock(es_comodin=False) for _ in range(7)]
+        
+        # SOLUCIÓN AL INDEXERROR: Añadimos una carta inicial al mazo de descartes
+        juego.baraja.descartes = [MagicMock()]
     
-        # Configuramos la carta que se va a robar
-        carta_robada = MagicMock(es_comodin=False)
+        # Configuración de la carta robada para evitar el "doble robo"
+        carta_robada = MagicMock()
+        carta_robada.es_comodin = False 
         juego.baraja.robar = MagicMock(return_value=carta_robada)
     
-        # Configuramos las respuestas de la UI
+        # Configuración de mocks de la UI
         mock_ui.solicitar_accion_robo.return_value = "mazo"
-        # El jugador descarta la primera carta (índice 0) y decide NO cerrar
         mock_ui.solicitar_descarte.return_value = (0, False)
-        
-        # El validador dice que tiene 20 puntos (no puede cerrar, pero el test lo fuerza a False)
         mock_validador.return_value = (20, False)
     
         # EJECUCIÓN
@@ -72,10 +72,8 @@ class TestJuegoChinchon:
     
         # VERIFICACIÓN
         assert quiere_cerrar is False
-        # Debe seguir teniendo 7 cartas (7 iniciales + 1 robada - 1 descartada)
         assert len(jugador.mano) == 7
-        # Verificamos que se llamó al robo del mazo
-        juego.baraja.robar.assert_called()
+        assert juego.baraja.robar.call_count == 1
 
     @patch('core.engine.Validador.calcular_puntos_optimos')
     def test_calcular_fin_ronda_chinchon(self, mock_validador, juego, mock_ui):
