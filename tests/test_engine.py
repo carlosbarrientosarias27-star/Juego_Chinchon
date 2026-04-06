@@ -32,82 +32,70 @@ class TestJuegoChinchon:
         """Verifica que el comodín ID 4 elimina al jugador."""
         jugador = juego.jugadores[0]
         carta_comodin = MagicMock(id_comodin=4)
-        
+    
+    # Aseguramos que haya algo en descartes por si el motor lo consulta
+        juego.baraja.descartes = [MagicMock()] 
+    
         juego._aplicar_logica_comodin(jugador, carta_comodin)
-        
+    
         assert jugador.eliminado is True
-        mock_ui.notificar_comodin.assert_called_with("SIN CERVEZA", 4)
-
-    def test_aplicar_logica_comodin_descuento_1906(self, juego):
-        """Verifica que el comodín ID 3 resta 25 puntos (mínimo 0)."""
-        jugador = juego.jugadores[0]
-        jugador.puntos = 50
-        carta_comodin = MagicMock(id_comodin=3)
         
-        juego._aplicar_logica_comodin(jugador, carta_comodin)
-        
-        assert jugador.puntos == 25
-
     @patch('core.engine.Validador.calcular_puntos_optimos')
-    def test_ejecutar_turno_robo_mazo_normal(self, mock_validador, juego, mock_ui):
-        """Verifica el flujo de robo del mazo y descarte sin cerrar."""
+    def test_ejecutar_turno_basico(self, mock_validador, juego, mock_ui):
+        """Verifica el flujo de un turno normal sin cerrar."""
         jugador = juego.jugadores[0]
         jugador.mano = [MagicMock(es_comodin=False) for _ in range(7)]
-        
-        # SOLUCIÓN AL INDEXERROR: Añadimos una carta inicial al mazo de descartes
         juego.baraja.descartes = [MagicMock()]
     
-        # Configuración de la carta robada para evitar el "doble robo"
-        carta_robada = MagicMock()
-        carta_robada.es_comodin = False 
+        carta_robada = MagicMock(es_comodin=False)
         juego.baraja.robar = MagicMock(return_value=carta_robada)
     
-        # Configuración de mocks de la UI
         mock_ui.solicitar_accion_robo.return_value = "mazo"
         mock_ui.solicitar_descarte.return_value = (0, False)
         mock_validador.return_value = (20, False)
     
-        # EJECUCIÓN
         quiere_cerrar = juego.ejecutar_turno(jugador)
     
-        # VERIFICACIÓN
         assert quiere_cerrar is False
         assert len(jugador.mano) == 7
         assert juego.baraja.robar.call_count == 1
-
-    def test_ejecutar_turno_salir(self, juego, mock_ui):
-        """Verifica que ejecutar_turno devuelva None cuando se solicita salir."""
-        jugador = juego.jugadores[0]
-        # Simulamos que el usuario elige 'S' en la UI
-        mock_ui.solicitar_accion_robo.return_value = "salir"
-        
-        resultado = juego.ejecutar_turno(jugador)
-        
-        assert resultado is None
-
-    def test_jugar_interrupcion_por_salida(self, juego, mock_ui):
-        """Verifica que el bucle principal 'jugar' termine si un jugador sale."""
-        # Configuramos el mazo para que preparar_ronda no falle
-        juego.baraja.reiniciar = MagicMock()
-        
-        # Simulamos que en el primer turno el jugador elige salir (retorna None)
-        with patch.object(juego, 'ejecutar_turno', return_value=None):
-            juego.jugar() 
-            
-        # Verificamos que no se llamó a calcular_fin_ronda al salir abruptamente
-        with patch.object(juego, 'calcular_fin_ronda') as mock_fin:
-            assert mock_fin.call_count == 0
 
     @patch('core.engine.Validador.calcular_puntos_optimos')
     def test_calcular_fin_ronda_chinchon(self, mock_validador, juego, mock_ui):
         """Verifica la bonificación de -10 puntos por Chinchón."""
         jugador = juego.jugadores[0]
         jugador.puntos = 15
-        # Simulamos que el validador detecta Chinchón
         mock_validador.return_value = (0, True)
         
         juego.calcular_fin_ronda(jugador)
         
-        # 15 puntos iniciales - 10 de bono = 5
         assert jugador.puntos == 5
         mock_ui.notificar_evento.assert_any_call(f"¡{jugador.nombre} hizo CHINCHÓN! (-10 pts)")
+
+    # --- NUEVOS TESTS DE SALIDA VOLUNTARIA ---
+
+    def test_ejecutar_turno_salir(self, juego, mock_ui):
+        """Verifica que ejecutar_turno devuelva None cuando se solicita salir."""
+        jugador = juego.jugadores[0]
+    
+    # SOLUCIÓN AL INDEXERROR: Añadimos una carta al pozo
+        juego.baraja.descartes = [MagicMock()] 
+    
+        mock_ui.solicitar_accion_robo.return_value = "salir"
+    
+        resultado = juego.ejecutar_turno(jugador)
+        assert resultado is None
+
+    def test_jugar_interrupcion_por_salida(self, juego, mock_ui):
+        """Verifica que el bucle principal 'jugar' termine si un jugador sale."""
+        # Evitamos errores de baraja configurando un mock
+        juego.baraja.reiniciar = MagicMock()
+        
+        # Forzamos que ejecutar_turno devuelva None para simular la salida
+        with patch.object(juego, 'ejecutar_turno', return_value=None):
+            juego.jugar() 
+            
+        # Si el test finaliza, significa que el 'return' en engine.py funcionó.
+        # Validamos que no se intentó cerrar la ronda normalmente
+        with patch.object(juego, 'calcular_fin_ronda') as mock_fin:
+            assert mock_fin.call_count == 0

@@ -32,7 +32,7 @@ class TerminalUI:
         else:
             print("\nLa partida ha terminado en empate o sin ganador claro.")
 
-   def solicitar_accion_robo(self, jugador, carta_descarte):
+    def solicitar_accion_robo(self, jugador, carta_descarte):
         """Pregunta al jugador de dónde robar o si desea salir."""
         self.mostrar_mano(jugador)
         print(f"\nCarta en el pozo: {self.render_carta(carta_descarte)}")
