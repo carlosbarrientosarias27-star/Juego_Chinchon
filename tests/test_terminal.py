@@ -60,3 +60,24 @@ class TestTerminalUI:
         # Verificamos que se llame a print con el nombre y la carta renderizada
         mock_print.assert_any_call("\n👉 Mano de Alice:")
         mock_print.assert_any_call("  1. [1 de Bastos]")
+
+    @patch('builtins.print')
+    def test_anunciar_ganador_con_jugador(self, mock_print, ui):
+        """Verifica que se imprima el nombre del ganador con el formato decorado."""
+        ganador = MagicMock()
+        ganador.nombre = "Carlos"
+        
+        ui.anunciar_ganador(ganador)
+        
+        # Verificamos que se imprima el anuncio con el nombre del ganador
+        mock_print.assert_any_call("\n" + "="*30)
+        mock_print.assert_any_call("¡EL GANADOR ES: Carlos!")
+        mock_print.assert_any_call("="*30 + "\n")
+
+    @patch('builtins.print')
+    def test_anunciar_ganador_empate(self, mock_print, ui):
+        """Verifica el mensaje cuando no hay un ganador (None)."""
+        ui.anunciar_ganador(None)
+        
+        # Verificamos el mensaje de empate o sin ganador
+        mock_print.assert_called_with("\nLa partida ha terminado en empate o sin ganador claro.")

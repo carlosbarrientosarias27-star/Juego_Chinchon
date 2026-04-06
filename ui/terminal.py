@@ -23,3 +23,11 @@ class TerminalUI:
         print(f"\n👉 Mano de {jugador.nombre}:")
         for i, c in enumerate(jugador.mano):
             print(f"  {i+1}. {self.render_carta(c)}")
+    
+    def anunciar_ganador(self, ganador):
+        if ganador:
+            print("\n" + "="*30)
+            print(f"¡EL GANADOR ES: {ganador.nombre}!")
+            print("="*30 + "\n")
+        else:
+            print("\nLa partida ha terminado en empate o sin ganador claro.")
