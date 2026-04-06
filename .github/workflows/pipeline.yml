@@ -1,0 +1,51 @@
+name: CI Juego Chinchon
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Matriz de versiones incluyendo la 3.14 en desarrollo
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14-dev"]
+
+    steps:
+    - name: Descargar código
+      uses: actions/checkout@v4
+
+    - name: Configurar Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        allow-prereleases: true
+
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Aseguramos las herramientas de calidad si no están en el txt
+        pip install flake8 pytest pytest-cov bandit
+
+    - name: Calidad de Código (Flake8)
+      continue-on-error: ${{ matrix.python-version == '3.14-dev' }}
+      run: |
+        # Revisa todo el proyecto buscando errores lógicos o de sintaxis
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Reporte de estilo PEP8
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Auditoría de Seguridad (Bandit)
+      run: |
+        # Analizamos las carpetas lógicas del juego
+        bandit -r core models ui -ll
+
+    - name: Tests y Cobertura (Pytest-Cov)
+      run: |
+        # Medimos cobertura de todas las carpetas de código fuente
+        pytest --cov=core --cov=models --cov=ui --cov-report=term-missing
