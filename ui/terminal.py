@@ -31,3 +31,14 @@ class TerminalUI:
             print("="*30 + "\n")
         else:
             print("\nLa partida ha terminado en empate o sin ganador claro.")
+
+    def solicitar_accion_robo(self, jugador, carta_descarte):
+        """Pregunta al jugador si quiere robar del mazo o del pozo de descartes."""
+        self.mostrar_mano(jugador)
+        print(f"\nCarta en el pozo: {self.render_carta(carta_descarte)}")
+        
+        while True:
+            opcion = input("¿Robar de (M)azo o (P)ozo?: ").upper()
+            if opcion in ['M', 'P']:
+                return opcion
+            print("❌ Opción inválida. Usa 'M' para Mazo o 'P' para Pozo.")

@@ -81,3 +81,18 @@ class TestTerminalUI:
         
         # Verificamos el mensaje de empate o sin ganador
         mock_print.assert_called_with("\nLa partida ha terminado en empate o sin ganador claro.")
+
+    @patch('builtins.input', side_effect=['X', 'M'])
+    @patch('builtins.print')
+    def test_solicitar_accion_robo_reintento(self, mock_print, mock_input, ui):
+        """Verifica que el sistema reintente si la entrada es inválida y acepte 'M'."""
+        mock_jugador = MagicMock(nombre="Test")
+        mock_jugador.mano = []
+        mock_carta = MagicMock(es_comodin=False, valor=10, palo="Copas")
+        
+        resultado = ui.solicitar_accion_robo(mock_jugador, mock_carta)
+        
+        # Debe retornar 'M' tras el segundo intento
+        assert resultado == 'M'
+        # Debe haber mostrado el error de opción inválida
+        mock_print.assert_any_call("❌ Opción inválida. Usa 'M' para Mazo o 'P' para Pozo.")
