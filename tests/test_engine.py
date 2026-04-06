@@ -50,20 +50,32 @@ class TestJuegoChinchon:
 
     @patch('core.engine.Validador.calcular_puntos_optimos')
     def test_ejecutar_turno_robo_mazo_normal(self, mock_validador, juego, mock_ui):
-        """Simula un turno normal robando del mazo sin cerrar."""
+        """Verifica el flujo de robo del mazo y descarte sin cerrar."""
         jugador = juego.jugadores[0]
-        jugador.mano = [MagicMock() for _ in range(7)]
-        
-        # Configuración de mocks
+        # Empezamos con la mano estándar de 7 cartas
+        jugador.mano = [MagicMock(es_comodin=False) for _ in range(7)]
+    
+        # Configuramos la carta que se va a robar
+        carta_robada = MagicMock(es_comodin=False)
+        juego.baraja.robar = MagicMock(return_value=carta_robada)
+    
+        # Configuramos las respuestas de la UI
         mock_ui.solicitar_accion_robo.return_value = "mazo"
-        mock_ui.solicitar_descarte.return_value = (0, False)  # (índice, quiere_cerrar)
-        mock_validador.return_value = (20, False)  # 20 puntos, no chinchón
+        # El jugador descarta la primera carta (índice 0) y decide NO cerrar
+        mock_ui.solicitar_descarte.return_value = (0, False)
         
-        cerro = juego.ejecutar_turno(jugador)
-        
-        assert cerro is False
+        # El validador dice que tiene 20 puntos (no puede cerrar, pero el test lo fuerza a False)
+        mock_validador.return_value = (20, False)
+    
+        # EJECUCIÓN
+        quiere_cerrar = juego.ejecutar_turno(jugador)
+    
+        # VERIFICACIÓN
+        assert quiere_cerrar is False
+        # Debe seguir teniendo 7 cartas (7 iniciales + 1 robada - 1 descartada)
         assert len(jugador.mano) == 7
-        mock_ui.solicitar_accion_robo.assert_called()
+        # Verificamos que se llamó al robo del mazo
+        juego.baraja.robar.assert_called()
 
     @patch('core.engine.Validador.calcular_puntos_optimos')
     def test_calcular_fin_ronda_chinchon(self, mock_validador, juego, mock_ui):
@@ -77,4 +89,4 @@ class TestJuegoChinchon:
         
         # 15 puntos iniciales - 10 de bono = 5
         assert jugador.puntos == 5
-        mock_ui.notificar_evento.assert_any_call(f"¡{jugador.nombre} hizo CHINCHÓN! (-10)")
+        mock_ui.notificar_evento.assert_any_call(f"¡{jugador.nombre} hizo CHINCHÓN! (-10 pts)")

@@ -4,24 +4,26 @@ from ui.terminal import TerminalUI
 
 @pytest.fixture
 def ui():
-    """Proporciona una instancia de TerminalUI para los tests."""
     return TerminalUI()
 
 class TestTerminalUI:
 
-    @patch('os.system')
-    def test_limpiar_windows(self, mock_system, ui):
+    # Cambiamos os.system por subprocess.run
+    @patch('ui.terminal.subprocess.run') 
+    def test_limpiar_windows(self, mock_run, ui):
         """Verifica que se llame a 'cls' si el sistema es Windows (nt)."""
         with patch('os.name', 'nt'):
             ui.limpiar()
-            mock_system.assert_called_with('cls')
+            # Validamos que se llamó a subprocess con la lista ['cls']
+            mock_run.assert_called_with(['cls'], check=True)
 
-    @patch('os.system')
-    def test_limpiar_unix(self, mock_system, ui):
+    @patch('ui.terminal.subprocess.run')
+    def test_limpiar_unix(self, mock_run, ui):
         """Verifica que se llame a 'clear' en sistemas Linux/Mac."""
         with patch('os.name', 'posix'):
             ui.limpiar()
-            mock_system.assert_called_with('clear')
+            # Validamos que se llamó a subprocess con la lista ['clear']
+            mock_run.assert_called_with(['clear'], check=True)
 
     def test_render_carta_normal(self, ui):
         """Valida el formato de texto para una carta común."""
