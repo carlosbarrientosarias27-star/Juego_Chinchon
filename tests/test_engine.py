@@ -77,4 +77,4 @@ class TestJuegoChinchon:
         
         # 15 puntos iniciales - 10 de bono = 5
         assert jugador.puntos == 5
-        mock_ui.notificar_evento.assert_any_call(f"¡{jugador.nombre} hizo CHINCHÓN! (-10
+        mock_ui.notificar_evento.assert_any_call(f"¡{jugador.nombre} hizo CHINCHÓN! (-10)")
