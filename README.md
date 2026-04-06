@@ -8,28 +8,53 @@ Implementación en Python del clásico juego de cartas español **Chinchón**, j
 
 ```
 JUEGO_CHINCHON/
+├── .github/
+│   └── workflows/
+│       └── pipeline.yml      # Pipeline de CI/CD (tests automáticos)
 ├── core/
-│   ├── cards.py          # Baraja española y carta inmutable
-│   ├── engine.py         # Motor principal y bucle de juego
-│   └── validator.py      # Validación de combinaciones y puntuación
+│   ├── __init__.py
+│   ├── cards.py              # Baraja española y carta inmutable
+│   ├── engine.py             # Motor principal y bucle de juego
+│   └── validator.py          # Validación de combinaciones y puntuación
 ├── models/
-│   └── player.py         # Modelo de datos del jugador
+│   ├── __init__.py
+│   └── player.py             # Modelo de datos del jugador
 ├── ui/
-│   ├── interface.py      # Contrato abstracto de interfaz de usuario
-│   └── terminal.py       # Implementación CLI de la interfaz
+│   ├── __init__.py
+│   ├── interface.py          # Contrato abstracto de interfaz de usuario
+│   └── terminal.py           # Implementación CLI de la interfaz
 ├── tests/
-│   ├── test_cards.py
-│   ├── test_engine.py
-│   ├── test_interface.py
-│   ├── test_main.py
-│   ├── test_player.py
-│   ├── test_terminal.py
-│   └── test_validator.py
-├── docs/                 # Documentación individual por módulo
-├── main.py               # Punto de entrada
+│   ├── test_cards.py         # Tests de Baraja y Carta
+│   ├── test_engine.py        # Tests del motor de juego
+│   ├── test_interface.py     # Tests del contrato abstracto UI
+│   ├── test_main.py          # Tests del punto de entrada
+│   ├── test_player.py        # Tests del modelo Jugador
+│   ├── test_terminal.py      # Tests de la interfaz CLI
+│   └── test_validator.py     # Tests del validador de combinaciones
+├── docs/                     # Documentación individual por módulo
+│   ├── cards.md
+│   ├── engine.md
+│   ├── validator.md
+│   ├── player.md
+│   ├── interface.md
+│   ├── terminal.md
+│   ├── main.md
+│   ├── test_cards.md
+│   ├── test_engine.md
+│   ├── test_interface.md
+│   ├── test_main.md
+│   ├── test_player.md
+│   ├── test_terminal.md
+│   ├── test_validator.md
+│   ├── asistencia_ia.md
+│   ├── Errores de seguridad.md
+│   └── Pruebas de comodin y caso edge.md
+├── .gitignore
 ├── conftest.py
+├── main.py                   # Punto de entrada
 ├── pytest.ini
-└── requirements.txt
+├── requirements.txt
+└── README.md
 ```
 
 ---
@@ -50,11 +75,67 @@ pip install -r requirements.txt
 python main.py
 ```
 
-**Ejecutar tests:**
+---
+
+# 🧪 Tests
+
+El proyecto cuenta con una suite completa de **tests unitarios** con `pytest`, cubriendo todos los módulos del juego.
+
+## Ejecutar todos los tests
 
 ```bash
 pytest
 ```
+
+## Ejecutar con detalle
+
+```bash
+pytest -v
+```
+
+## Ejecutar un módulo específico
+
+```bash
+pytest tests/test_cards.py -v
+pytest tests/test_engine.py -v
+```
+
+## Cobertura de tests por módulo
+
+| Archivo de test       | Módulo cubierto        | Nº tests | Qué verifica                                           |
+|-----------------------|------------------------|----------|--------------------------------------------------------|
+| `test_cards.py`       | `core/cards.py`        | 6        | Inicialización, robo, puntos, reabastecimiento, reinicio |
+| `test_engine.py`      | `core/engine.py`       | 6        | Motor, turnos, comodines, Chinchón, salida voluntaria  |
+| `test_interface.py`   | `ui/interface.py`      | 3        | Contrato ABC, subclases completas e incompletas        |
+| `test_main.py`        | `main.py`              | 2        | Flujo de arranque, manejo de input inválido            |
+| `test_player.py`      | `models/player.py`     | 7        | Mano, extracción, comodines, propiedades, `__str__`    |
+| `test_terminal.py`    | `ui/terminal.py`       | 9        | Render, limpieza, entradas, reintentos, descarte       |
+| `test_validator.py`   | `core/validator.py`    | 8        | Escaleras, grupos, puntuación óptima, Chinchón         |
+
+---
+
+# ⚙️ CI/CD
+
+El proyecto utiliza **GitHub Actions** con un pipeline definido en `.github/workflows/pipeline.yml` que se ejecuta automáticamente en cada `push` o `pull request`.
+
+## Flujo del pipeline
+
+```
+Push / Pull Request
+      ↓
+Instalar dependencias (pip install -r requirements.txt)
+      ↓
+Ejecutar suite de tests (pytest)
+      ↓
+✅ Tests pasan → merge permitido
+❌ Tests fallan → merge bloqueado
+```
+
+## Badge de estado
+
+![CI](https://github.com/tu-usuario/juego-chinchon/actions/workflows/pipeline.yml/badge.svg)
+
+> Sustituye `tu-usuario` por tu nombre de usuario de GitHub para activar el badge.
 
 ---
 
@@ -68,12 +149,12 @@ Ser el último jugador en pie. Un jugador es **eliminado** cuando acumula **100 
 ## La baraja
 Se juega con baraja española de **40 cartas** (4 palos × 10 valores) más **4 comodines** especiales:
 
-| Palo     | Valores disponibles       |
-|----------|---------------------------|
-| Oros     | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12 |
-| Copas    | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12 |
-| Espadas  | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12 |
-| Bastos   | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12 |
+| Palo     | Valores disponibles                    |
+|----------|----------------------------------------|
+| Oros     | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12       |
+| Copas    | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12       |
+| Espadas  | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12       |
+| Bastos   | 1, 2, 3, 4, 5, 6, 7, 10, 11, 12       |
 
 > ⚠️ Los valores 8 y 9 **no existen** en la baraja española.
 
@@ -95,29 +176,27 @@ Se juega con baraja española de **40 cartas** (4 palos × 10 valores) más **4 
 
 Cada carta vale su valor numérico en puntos. Las cartas que forman **combinaciones válidas** no suman puntos:
 
-| Combinación | Descripción                                              | Mínimo |
-|-------------|----------------------------------------------------------|--------|
-| **Grupo**   | 3 o más cartas del mismo valor (distintos palos)         | 3      |
-| **Escalera**| 3 o más cartas consecutivas del mismo palo               | 3      |
-
-El objetivo de cada jugador es minimizar los puntos de las cartas que **no** pertenecen a ninguna combinación.
+| Combinación  | Descripción                                      | Mínimo |
+|--------------|--------------------------------------------------|--------|
+| **Grupo**    | 3 o más cartas del mismo valor (distintos palos) | 3      |
+| **Escalera** | 3 o más cartas consecutivas del mismo palo       | 3      |
 
 ---
 
 ## Chinchón 🏆
-Si un jugador logra que sus **7 cartas formen una sola combinación válida** (escalera o grupo de 7), hace **Chinchón** y recibe una bonificación de **-10 puntos**.
+Si un jugador logra que sus **7 cartas formen una sola combinación válida**, hace **Chinchón** y recibe una bonificación de **-10 puntos**.
 
 ---
 
 ## Comodines de cerveza 🍺
-Al robar del mazo, un jugador puede obtener uno de los 4 comodines especiales. Cada uno tiene un efecto inmediato:
+Al robar del mazo, un jugador puede obtener uno de los 4 comodines especiales:
 
-| ID | Comodín          | Efecto                                                        |
-|----|------------------|---------------------------------------------------------------|
-| 1  | Estrella Galicia | Reduce los puntos del jugador a **80** si tenía ≥ 100        |
-| 2  | Alhambra Verde   | Reduce los puntos del jugador a **25** si tenía ≥ 50         |
-| 3  | 1906             | Resta **25 puntos** al jugador si tenía ≥ 25                 |
-| 4  | SIN CERVEZA      | **Elimina** al jugador inmediatamente de la partida          |
+| ID | Comodín          | Efecto                                                     |
+|----|------------------|------------------------------------------------------------|
+| 1  | Estrella Galicia | Reduce los puntos del jugador a **80** si tenía ≥ 100      |
+| 2  | Alhambra Verde   | Reduce los puntos del jugador a **25** si tenía ≥ 50       |
+| 3  | 1906             | Resta **25 puntos** al jugador si tenía ≥ 25               |
+| 4  | SIN CERVEZA      | **Elimina** al jugador inmediatamente de la partida        |
 
 Tras aplicar el efecto, el jugador roba una carta normal y continúa su turno.
 
@@ -131,7 +210,7 @@ Un jugador queda **eliminado** si:
 ---
 
 ## Salir de la partida
-En cualquier momento de su turno, un jugador puede escribir `S` para **abandonar la partida**, lo que la finaliza inmediatamente.
+En cualquier momento de su turno, un jugador puede introducir `S` para **abandonar la partida**, lo que la finaliza inmediatamente.
 
 ---
 
@@ -139,15 +218,22 @@ En cualquier momento de su turno, un jugador puede escribir `S` para **abandonar
 
 Cada módulo tiene su propio README en la carpeta `docs/`:
 
-| Archivo              | Módulo documentado     |
-|----------------------|------------------------|
-| `cards.md`           | `core/cards.py`        |
-| `engine.md`          | `core/engine.py`       |
-| `validator.md`       | `core/validator.py`    |
-| `player.md`          | `models/player.py`     |
-| `interface.md`       | `ui/interface.py`      |
-| `terminal.md`        | `ui/terminal.py`       |
-| `main.md`            | `main.py`              |
+| Archivo                          | Módulo documentado     |
+|----------------------------------|------------------------|
+| `cards.md`                       | `core/cards.py`        |
+| `engine.md`                      | `core/engine.py`       |
+| `validator.md`                   | `core/validator.py`    |
+| `player.md`                      | `models/player.py`     |
+| `interface.md`                   | `ui/interface.py`      |
+| `terminal.md`                    | `ui/terminal.py`       |
+| `main.md`                        | `main.py`              |
+| `test_cards.md`                  | `tests/test_cards.py`  |
+| `test_engine.md`                 | `tests/test_engine.py` |
+| `test_interface.md`              | `tests/test_interface.py` |
+| `test_main.md`                   | `tests/test_main.py`   |
+| `test_player.md`                 | `tests/test_player.py` |
+| `test_terminal.md`               | `tests/test_terminal.py` |
+| `test_validator.md`              | `tests/test_validator.py` |
 
 ---
 
@@ -157,4 +243,5 @@ Cada módulo tiene su propio README en la carpeta `docs/`:
 - `dataclasses` — modelos inmutables
 - `abc` — contrato de interfaz desacoplado
 - `itertools` — búsqueda de combinaciones
-- `pytest` — suite de tests
+- `pytest` — suite de tests unitarios
+- **GitHub Actions** — CI/CD automático
