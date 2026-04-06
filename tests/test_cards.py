@@ -32,3 +32,23 @@ def test_reabastecer_mazo():
     # AJUSTE: Ahora el mazo tiene 1 carta (2 que pasaron menos 1 que se robó)
     assert len(mazo.cartas) == 1  
     assert len(mazo.descartes) == 1
+
+def test_baraja_reiniciar():
+    """Verifica que reiniciar limpie descartes y restaure el mazo completo."""
+    mazo = Baraja()
+    
+    # Simulamos una partida avanzada: robamos cartas y añadimos a descartes
+    for _ in range(10):
+        mazo.robar()
+    mazo.descartes = [Carta('Oros', 1), Carta('Oros', 2)]
+    
+    # El estado antes de reiniciar
+    assert len(mazo.cartas) == 34
+    assert len(mazo.descartes) == 2
+    
+    # Ejecutamos la acción
+    mazo.reiniciar() 
+    
+    # El estado después debe ser el inicial (44 cartas y 0 descartes)
+    assert len(mazo.cartas) == 44
+    assert len(mazo.descartes) == 0    

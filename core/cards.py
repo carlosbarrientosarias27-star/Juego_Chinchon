@@ -25,6 +25,11 @@ class Baraja:
         self.cartas = [Carta(p, v) for p in self.PALOS for v in self.VALORES]
         self.cartas += [Carta(es_comodin=True, id_comodin=i) for i in range(1, 5)]
         random.shuffle(self.cartas)
+    
+    def reiniciar(self):
+        """Prepara la baraja para una nueva ronda, limpiando todo."""
+        self.descartes = [] # Limpiamos la pila de descartes
+        self._inicializar()  # Esto regenera las 40 cartas + 4 comodines y las mezcla
 
     def robar(self):
         if not self.cartas:
