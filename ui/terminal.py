@@ -42,3 +42,24 @@ class TerminalUI:
             if opcion in ['M', 'P']:
                 return opcion
             print("❌ Opción inválida. Usa 'M' para Mazo o 'P' para Pozo.")
+    
+    def solicitar_descarte(self, jugador, puede_cerrar):
+        """Pide al jugador que elija una carta para descartar y si desea cerrar."""
+        self.mostrar_mano(jugador)
+        
+        while True:
+            try:
+                entrada = input(f"\nElige el número de carta para descartar (1-{len(jugador.mano)}): ")
+                idx = int(entrada) - 1
+                
+                if 0 <= idx < len(jugador.mano):
+                    quiere_cerrar = False
+                    if puede_cerrar:
+                        confirmacion = input("¿Quieres cerrar la partida con esta carta? (S/N): ").upper()
+                        quiere_cerrar = (confirmacion == 'S')
+                    
+                    return idx, quiere_cerrar
+                
+                print(f"❌ Selección fuera de rango. Elige entre 1 y {len(jugador.mano)}.")
+            except ValueError:
+                print("❌ Por favor, introduce un número válido.")

@@ -96,3 +96,15 @@ class TestTerminalUI:
         assert resultado == 'M'
         # Debe haber mostrado el error de opción inválida
         mock_print.assert_any_call("❌ Opción inválida. Usa 'M' para Mazo o 'P' para Pozo.")
+    
+    @patch('builtins.input', side_effect=['2', 'S'])
+    @patch('builtins.print')
+    def test_solicitar_descarte_cerrando(self, mock_print, mock_input, ui):
+        """Verifica que se pueda seleccionar una carta y elegir cerrar la partida."""
+        mock_jugador = MagicMock()
+        mock_jugador.mano = [MagicMock(), MagicMock()] # Simulamos 2 cartas
+        
+        idx, cerrar = ui.solicitar_descarte(mock_jugador, puede_cerrar=True)
+        
+        assert idx == 1  # El usuario eligió '2', que es índice 1
+        assert cerrar is True # El usuario eligió 'S'
