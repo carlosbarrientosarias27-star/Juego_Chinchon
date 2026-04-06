@@ -75,6 +75,29 @@ class TestJuegoChinchon:
         assert len(jugador.mano) == 7
         assert juego.baraja.robar.call_count == 1
 
+    def test_ejecutar_turno_salir(self, juego, mock_ui):
+        """Verifica que ejecutar_turno devuelva None cuando se solicita salir."""
+        jugador = juego.jugadores[0]
+        # Simulamos que el usuario elige 'S' en la UI
+        mock_ui.solicitar_accion_robo.return_value = "salir"
+        
+        resultado = juego.ejecutar_turno(jugador)
+        
+        assert resultado is None
+
+    def test_jugar_interrupcion_por_salida(self, juego, mock_ui):
+        """Verifica que el bucle principal 'jugar' termine si un jugador sale."""
+        # Configuramos el mazo para que preparar_ronda no falle
+        juego.baraja.reiniciar = MagicMock()
+        
+        # Simulamos que en el primer turno el jugador elige salir (retorna None)
+        with patch.object(juego, 'ejecutar_turno', return_value=None):
+            juego.jugar() 
+            
+        # Verificamos que no se llamó a calcular_fin_ronda al salir abruptamente
+        with patch.object(juego, 'calcular_fin_ronda') as mock_fin:
+            assert mock_fin.call_count == 0
+
     @patch('core.engine.Validador.calcular_puntos_optimos')
     def test_calcular_fin_ronda_chinchon(self, mock_validador, juego, mock_ui):
         """Verifica la bonificación de -10 puntos por Chinchón."""

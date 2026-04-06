@@ -42,27 +42,24 @@ class JuegoChinchon:
         for jugador in self.obtener_jugadores_activos():
             jugador.mano = [self.baraja.robar() for _ in range(7)]
 
-    def ejecutar_turno(self, jugador: Jugador) -> bool:
-        """
-        Gestiona el turno de un jugador. 
-        Retorna True si el jugador decide cerrar la ronda.
-        """
-        # 1. Fase de Robo
+    def ejecutar_turno(self, jugador: Jugador) -> Optional[bool]:
+        """Gestiona el turno. Retorna None si el jugador pide salir del juego."""
         opcion = self.ui.solicitar_accion_robo(jugador, self.baraja.descartes[-1])
         
+        if opcion == "salir":
+            return None # Señal de salida voluntaria
+
         if opcion == "mazo":
             carta = self.baraja.robar()
             if carta.es_comodin:
                 self._aplicar_logica_comodin(jugador, carta)
                 if jugador.eliminado: return False
-                # Si no muere, roba otra carta normal según reglas
                 carta = self.baraja.robar()
         else:
             carta = self.baraja.descartes.pop()
 
         jugador.mano.append(carta)
 
-        # 2. Fase de Descarte/Cierre
         puntos_actuales, _ = Validador.calcular_puntos_optimos(jugador.mano)
         puede_cerrar = puntos_actuales <= 15
         
@@ -89,7 +86,7 @@ class JuegoChinchon:
                 self.ui.notificar_evento(f"{j.nombre} ha sido eliminado por puntos.")
 
     def jugar(self):
-        """Bucle principal de la partida (Main Loop)."""
+        """Bucle principal con soporte para salida."""
         while len(self.obtener_jugadores_activos()) > 1:
             self.preparar_ronda()
             ronda_activa = True
@@ -97,17 +94,15 @@ class JuegoChinchon:
             while ronda_activa:
                 for jugador in self.obtener_jugadores_activos():
                     cerrar = self.ejecutar_turno(jugador)
+                    
+                    if cerrar is None: # Si el jugador eligió SALIR
+                        print("\nJuego finalizado por el usuario.")
+                        return 
+                    
                     if cerrar:
                         self.calcular_fin_ronda(jugador)
-                        ronda_activa = False
-                        break
-                    
-                    if len(self.obtener_jugadores_activos()) <= 1:
                         ronda_activa = False
                         break
             
             self.ui.mostrar_puntuaciones(self.jugadores)
             self.ronda_actual += 1
-
-        ganadores = self.obtener_jugadores_activos()
-        self.ui.anunciar_ganador(ganadores[0] if ganadores else None)
