@@ -1,11 +1,12 @@
-# 📄 Reporte de Vulnerabilidad: Bandit B605
+# 🛡️ Reporte de Vulnerabilidad: Bandit B605
 
-Atributo	    Detalle
-ID del Error	B605: start_process_with_a_shell
-Gravedad	    ALTA (Alta)
-Confianza	    ALTA (Alta)
-CWE	CWE-78:     Inyección de comandos del sistema operativo
-Ubicación	    ui/terminal.py- Línea 5 
+| Atributo | Detalle |
+| :--- | :--- |
+| **ID del Error** | `B605: start_process_with_a_shell` |
+| **Gravedad** | 🔴 **ALTA** |
+| **Confianza** | ✅ **ALTA** |
+| **CWE** | [CWE-78](https://cwe.mitre.org/data/definitions/78.html): Inyección de comandos del sistema operativo |
+| **Ubicación** | `ui/terminal.py` — **Línea 5** |
 
 
 # Explicación del Problema
